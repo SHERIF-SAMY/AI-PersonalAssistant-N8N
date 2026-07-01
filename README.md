@@ -5,6 +5,8 @@ An AI-powered personal assistant built with **n8n**, combining **LLM agents**, *
 The assistant acts as a professional representative, answering client questions using a knowledge base, collecting meeting details, checking calendar availability, scheduling appointments, and sending confirmation emails—all through Telegram.
 
 ---
+<img width="1191" height="964" alt="Sherif_Agent_Assest" src="https://github.com/user-attachments/assets/daa59fda-0f52-452e-bcd9-cfe239fa8f19" />
+
 
 ## Features
 
