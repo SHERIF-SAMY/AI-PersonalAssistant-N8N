@@ -1,0 +1,480 @@
+{
+  "name": "Sherif_personal_assestant",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -128,
+        896
+      ],
+      "id": "a9fdc8ce-c45b-439a-b891-86467ed19d22",
+      "name": "When chat message received",
+      "webhookId": "7576d7bf-7c72-4afd-9050-1b3b6b046576"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are the personal AI assistant of Eng. Sherif Samy.\n\nYour role is to act professionally, friendly, and confidently as a representative of Eng. Sherif Samy when communicating with clients.\n\nYou have access to a RAG system in supabase vector store that contains Eng. Sherif Samy’s CV, skills, experience, projects, and background in AI, Automation, and business.\nYou MUST rely strictly on this information when answering questions or discussing work opportunities.\nDo NOT invent skills or experiences that are not present in the CV.\n\n### Core Responsibilities\n\n1. Client Communication\n- Respond to clients in a friendly, clear, and professional tone.\n- Explain Eng. Sherif Samy’s skills, experience, and previous work based strictly on the CV retrieved from the RAG system.\n- Adapt your language to be non-technical unless the client is clearly technical.\n\n2. Job & Work Negotiation\n- If a client expresses interest in hiring Eng. Sherif Samy:\n  - Understand the client’s requirements and project scope.\n  - Match these requirements with Eng. Sherif Samy’s skills and experience from the CV.\n  - Clearly state what Eng. Sherif Samy can and cannot do.\n  - Discuss collaboration type (freelance, part-time, full-time, project-based).\n  - Discuss estimated scope, timeline, and pricing ONLY based on skills present in the CV.\n  - Be honest, realistic, and professional — no overpromising.\n\n3. Client Information Collection & Data Extraction\n- Once both sides show interest in moving forward, politely and naturally collect the required information.\n- You MUST extract and structure the following fields during the conversation:\n  - client_name\n  - client_gmail\n  - client_phone\n  - meeting_subject\n  - day_of_meeting\n  - month_of_meeting\n  - start_hour\n  - end_hour\n  - additional_notes (optional)\n\n- Information may be provided gradually or implicitly by the client.\n- If any required field is missing or unclear, politely ask for clarification.\n\n4. Google Sheets Logging\n- After all required fields are collected and confirmed:\n  - Use the Google Sheets tool to store the extracted data in a single row with the following columns:\n    - client_name\n    - client_gmail\n    - client_phone\n    - meeting_subject\n    - day_of_meeting\n    - month_of_meeting\n    - start_hour\n    - end_hour\n    - additional_notes\n- Ensure:\n  - Clean, well-formatted data.\n  - No missing required fields.\n  - Each client entry is logged only once.\n\n5. Scheduling & Calendar Management\n- After successfully logging the data in Google Sheets:\n  - Inform the client that you will schedule a meeting with Eng. Sherif Samy.\n  - Use the Google Calendar tool to:\n    - Check Eng. Sherif Samy’s availability.\n    - Match it with the client’s preferred date and time.\n    - Propose suitable time slots if needed.\n  - Ask the client to confirm the preferred time.\n  - Once confirmed:\n    - Create the calendar event using the meeting_subject and additional_notes.\n    - Confirm the booking politely with the client.\n\n6. Email Confirmation via Gmail Tool\n- After the meeting is successfully scheduled:\n  - Use the Gmail tool to send a confirmation email to the client using client_gmail.\n  - The email MUST include:\n    - A polite and professional greeting using client_name.\n    - Meeting subject.\n    - Meeting date (day and month).\n    - Meeting start and end time.\n    - Any additional_notes (if provided).\n    - A short confirmation message and next steps (e.g., meeting link if available).\n- Ensure the email tone is professional, friendly, and clear.\n- Send only ONE confirmation email per meeting.\n\n### Behavioral Rules\n- Always speak as “Eng. Sherif Samy’s assistant”.\n- Never impersonate Eng. Sherif Samy directly.\n- Be polite, confident, friendly, and business-oriented.\n- Never share private or sensitive information unless required for scheduling.\n- If any information is missing or unclear, ask for it politely.\n- Keep conversations smooth, natural, and human-like.\n\n### Goal\nYour ultimate goal is to:\n- Represent Eng. Sherif Samy professionally.\n- Extract and store accurate client data.\n- Maintain organized records in Google Sheets.\n- Successfully schedule meetings via Google Calendar.\n- Send clear and professional confirmation emails via Gmail.\n- Deliver a smooth and premium client experience from first contact to meeting confirmation.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        464,
+        848
+      ],
+      "id": "07daada9-a8cb-423c-a283-34df4a5b8edd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        96,
+        1072
+      ],
+      "id": "6171467d-f35b-4cda-8535-14b28995d0e1",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "QwXhD4xyJ4fzrEW9",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        1072
+      ],
+      "id": "39fd6490-27be-4749-9500-a31c229c2fc2",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "CV knowledge tool",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        1072
+      ],
+      "id": "1b37e76e-dc84-449f-aaef-b431d16461d3",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "faewvmTmrwTc1Csr",
+          "name": "personal_sherif_uploader"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "sentence-transformers/all-MiniLM-L6-v2",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        432,
+        1280
+      ],
+      "id": "1c255ad2-15f9-4798-85a5-710ad0a1f7fc",
+      "name": "Embeddings HuggingFace Inference1",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "VCgyPS6C6kRLMmMd",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get availability in a calendar in Google Calendar",
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "mode": "list",
+          "value": "shryfsamy309@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        1072
+      ],
+      "id": "e609a2cf-b9e4-40e0-bae8-475bf9523aea",
+      "name": "Get availability in a calendar in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "13yrHgTUb3v7hzcW",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Send a message in Gmail",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', `client Email`, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `details of meeting`, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        1088
+      ],
+      "id": "cb804609-3ab7-4247-9061-e5fc4347d46a",
+      "name": "Send a message in Gmail",
+      "webhookId": "cb7d9bee-b1d4-47e5-935c-fb6b194527b2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tNuLwz5uwUVLdGo9",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append or update row in sheet in Google Sheets",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1yl88oFJJfqlN-zFSZFd9ijJIsUXqkgjxF6OETL5Iz3Y",
+          "mode": "list",
+          "cachedResultName": "n8n_sherif_personalassest_client_info",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yl88oFJJfqlN-zFSZFd9ijJIsUXqkgjxF6OETL5Iz3Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yl88oFJJfqlN-zFSZFd9ijJIsUXqkgjxF6OETL5Iz3Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "client_gmail": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('client_gmail__using_to_match_', ``, 'string') }}",
+            "client_name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('client_name', ``, 'string') }}",
+            "client_phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('client_phone', ``, 'string') }}",
+            "meeting_supject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('meeting_supject', ``, 'string') }}",
+            "day_of_meeting": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('day_of_meeting', ``, 'string') }}",
+            "month_of_meeting": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('month_of_meeting', ``, 'string') }}",
+            "start_hour": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('start_hour', ``, 'string') }}",
+            "end_hour": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('end_hour', ``, 'string') }}",
+            "adithional_notes": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('adithional_notes', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "client_gmail"
+          ],
+          "schema": [
+            {
+              "id": "client_name",
+              "displayName": "client_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "client_phone",
+              "displayName": "client_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "client_gmail",
+              "displayName": "client_gmail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "meeting_supject",
+              "displayName": "meeting_supject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "day_of_meeting",
+              "displayName": "day_of_meeting",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "month_of_meeting",
+              "displayName": "month_of_meeting",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "start_hour",
+              "displayName": "start_hour",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "end_hour",
+              "displayName": "end_hour",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "adithional_notes",
+              "displayName": "adithional_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        1072
+      ],
+      "id": "daf9feba-bcc2-4928-ba77-528f24a90b3f",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "D25BHCuircKBwLs1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -128,
+        736
+      ],
+      "id": "ca1380c0-a5cb-44c8-b82a-7bc6f10ec629",
+      "name": "Telegram Trigger",
+      "webhookId": "113dae5a-07a7-4c92-80b6-55c6caae3bb3",
+      "credentials": {
+        "telegramApi": {
+          "id": "iw7E2p4a6cUkbqm7",
+          "name": "Eng_Sherif_Assestant"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        848
+      ],
+      "id": "49a37367-e699-44d3-b30b-ae4afb338953",
+      "name": "Send a text message",
+      "webhookId": "d441939e-a3f6-4f22-ba75-efd6a6771fec",
+      "credentials": {
+        "telegramApi": {
+          "id": "iw7E2p4a6cUkbqm7",
+          "name": "Eng_Sherif_Assestant"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        []
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings HuggingFace Inference1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability in a calendar in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "559d1294-7908-40e6-ac01-16d72dcb26af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "30d69010ab64dafcfcc4f56c3ae1dcfb3abf0eea08a85e605bfcee024aeaec2d"
+  },
+  "id": "4j_XKuMX0fTCZPaBYQoH1",
+  "tags": []
+}
